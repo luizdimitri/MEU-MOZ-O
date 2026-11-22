@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I Love You Baby Girl</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffd6e7 0%, #ffb3d1 50%, #ff99c2 100%);
+      transition: background 1.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      user-select: none;
+    }
+
+    body.theme-pink {
+      background: linear-gradient(135deg, #ffc2dc 0%, #ff85b3 100%);
+    }
+
+    body.theme-blue {
+      background: linear-gradient(135deg, #bde0fe 0%, #72b5f7 100%);
+    }
+
+    /* Partículas caindo (lacinhos e corações) */
+    #falling-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .falling-item {
+      position: absolute;
+      top: -50px;
+      animation: fall linear forwards;
+      opacity: 0.9;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px) rotate(0deg);
+        opacity: 0.95;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0.3;
+      }
+    }
+
+    /* Telas */
+    .screen {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Capa */
+    .cover-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3.6rem;
+      color: #b51763;
+      text-shadow: 0 4px 15px rgba(255, 255, 255, 0.9);
+      margin-bottom: 35px;
+      line-height: 1.1;
+    }
+
+    .btn-princess {
+      background: linear-gradient(135deg, #ff4d94, #e60067);
+      color: white;
+      border: 3px solid #fff;
+      padding: 16px 42px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(230, 0, 103, 0.4);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      text-transform: lowercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-princess:hover {
+      transform: scale(1.07);
+      box-shadow: 0 14px 30px rgba(230, 0, 103, 0.55);
+    }
+
+    .btn-princess:active {
+      transform: scale(0.97);
+    }
+
+    /* Player discreto no topo */
+    #music-badge {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(6px);
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #c91868;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Contagem regressiva */
+    #countdown-box {
+      font-size: 6rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 6px 25px rgba(181, 23, 99, 0.5);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+
+    /* Botão Gatinha Marie */
+    #marie-btn-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .marie-button {
+      background: #fff;
+      border: 4px solid #ff66a3;
+      border-radius: 50%;
+      width: 155px;
+      height: 155px;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(255, 77, 148, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s ease;
+      position: relative;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    .marie-button:hover {
+      transform: scale(1.08);
+    }
+
+    .marie-hint {
+      background: rgba(255, 255, 255, 0.9);
+      color: #d61c6c;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+    }
+
+    /* Texto verde "Começando" */
+    #starting-text {
+      display: none;
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: #16a34a;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 12px 32px;
+      border-radius: 30px;
+      box-shadow: 0 8px 25px rgba(22, 163, 74, 0.35);
+      animation: popIn 0.4s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      80% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    /* Slideshow das 10 fotos */
+    #photo-stage {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-card {
+      width: 300px;
+      height: 390px;
+      background: #fff;
+      padding: 12px 12px 36px 12px;
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+      position: relative;
+      opacity: 0;
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .photo-counter {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #e60067;
+    }
+
+    .slide-from-left {
+      animation: slideLeftCenter 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .slide-from-right {
+      animation: slideRightCenter 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes slideLeftCenter {
+      0% { transform: translateX(-120vw) rotate(-10deg); opacity: 0; }
+      100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes slideRightCenter {
+      0% { transform: translateX(120vw) rotate(10deg); opacity: 0; }
+      100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+    }
+
+    /* Carta Rosa com Coração no Meio */
+    #envelope-stage {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      animation: fadeIn 0.8s ease;
+    }
+
+    .envelope-instruction {
+      background: rgba(255, 255, 255, 0.9);
+      color: #c91868;
+      font-weight: 800;
+      padding: 8px 20px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .envelope-wrapper {
+      position: relative;
+      width: 310px;
+      height: 210px;
+      background: #ff66a3;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(181, 23, 99, 0.35);
+      cursor: pointer;
+      perspective: 1000px;
+      transition: transform 0.3s ease;
+    }
+
+    .envelope-wrapper:hover:not(.open) {
+      transform: scale(1.04);
+    }
+
+    /* Aba superior do envelope */
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 155px solid transparent;
+      border-right: 155px solid transparent;
+      border-top: 115px solid #ff3385;
+      transform-origin: top;
+      transition: transform 0.8s ease;
+      z-index: 4;
+    }
+
+    /* Bolso frontal do envelope */
+    .envelope-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 155px solid #ff85b3;
+      border-right: 155px solid #ff70a6;
+      border-bottom: 110px solid #ff4d94;
+      border-top: 100px solid transparent;
+      border-radius: 0 0 12px 12px;
+      z-index: 3;
+    }
+
+    /* Coração central para clicar */
+    .heart-seal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      width: 58px;
+      height: 58px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      animation: heartbeat 1.3s infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.14); }
+    }
+
+    /* Papel da carta que sai de dentro */
+    .letter-paper {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
+      height: 175px;
+      background: #fffdfd;
+      border-radius: 10px;
+      padding: 22px 18px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      z-index: 2;
+      transition: all 1s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    .letter-paper p {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: #4a1530;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Estado Aberto */
+    .envelope-wrapper.open .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    .envelope-wrapper.open .heart-seal {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .envelope-wrapper.open .letter-paper {
+      opacity: 1;
+      z-index: 6;
+      bottom: -35px;
+      height: auto;
+      min-height: 270px;
+      left: -10px;
+      right: -10px;
+      border: 2px solid #ffb3d1;
+    }
+
+    /* Player oculto do YouTube */
+    #yt-player {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0.01;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Container das partículas caindo -->
+  <div id="falling-container"></div>
+
+  <!-- Indicador de música -->
+  <div id="music-badge">🎵 De Janeiro a Janeiro</div>
+
+  <!-- Player YouTube invisível -->
+  <div id="yt-player"></div>
+
+  <!-- TELA 1: CAPA -->
+  <div id="screen-cover" class="screen active">
+    <h1 class="cover-title">I LOVE YOU<br>BABY GIRL</h1>
+    <button id="btn-start" class="btn-princess">click princess</button>
+  </div>
+
+  <!-- TELA 2: EXPERIÊNCIA PRINCIPAL -->
+  <div id="screen-main" class="screen">
+    <!-- Contagem de 10 a 0 -->
+    <div id="countdown-box">10</div>
+
+    <!-- Botão em forma da Gatinha Marie -->
+    <div id="marie-btn-wrapper">
+      <button id="btn-marie" class="marie-button" aria-label="Gatinha Marie">
+        <!-- Caso queira usar a foto exata da Marie, salve como marie.png na mesma pasta e troque o SVG por: <img src="marie.png" style="width:100%;height:100%;object-fit:contain;"> -->
+        <svg viewBox="0 0 200 200" width="125" height="125">
+          <!-- Lacinho topo -->
+          <path d="M72 34 C55 18, 45 48, 78 46 Z" fill="#ff4d94" stroke="#222" stroke-width="4"/>
+          <path d="M128 34 C145 18, 155 48, 122 46 Z" fill="#ff4d94" stroke="#222" stroke-width="4"/>
+          <circle cx="100" cy="40" r="10" fill="#ff85b3" stroke="#222" stroke-width="4"/>
+          <!-- Orelhas -->
+          <path d="M52 78 L42 32 L82 54 Z" fill="#fff" stroke="#222" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M55 72 L49 43 L74 56 Z" fill="#ffb3d1"/>
+          <path d="M148 78 L158 32 L118 54 Z" fill="#fff" stroke="#222" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M145 72 L151 43 L126 56 Z" fill="#ffb3d1"/>
+          <!-- Cabeça -->
+          <ellipse cx="100" cy="105" rx="62" ry="52" fill="#fff" stroke="#222" stroke-width="4"/>
+          <!-- Tufo de pelo -->
+          <path d="M90 54 Q100 35 112 54" fill="#fff" stroke="#222" stroke-width="4"/>
+          <!-- Olhos azuis -->
+          <ellipse cx="78" cy="100" rx="10" ry="13" fill="#4da6ff" stroke="#222" stroke-width="3"/>
+          <circle cx="78" cy="100" r="5" fill="#111"/>
+          <circle cx="75" cy="96" r="3" fill="#fff"/>
+          <ellipse cx="122" cy="100" rx="10" ry="13" fill="#4da6ff" stroke="#222" stroke-width="3"/>
+          <circle cx="122" cy="100" r="5" fill="#111"/>
+          <circle cx="119" cy="96" r="3" fill="#fff"/>
+          <!-- Cílios -->
+          <path d="M68 92 L60 87 M132 92 L140 87" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+          <!-- Nariz e boca -->
+          <polygon points="94,114 106,114 100,121" fill="#ff66a3" stroke="#222" stroke-width="2"/>
+          <path d="M88 126 Q100 135 112 126" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bigodes -->
+          <path d="M48 108 L26 103 M48 118 L25 120 M152 108 L174 103 M152 118 L175 120" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+          <!-- Coleira rosa -->
+          <path d="M55 152 Q100 168 145 152" fill="none" stroke="#ff4d94" stroke-width="10" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="marie-hint">Clique na gatinha 🎀</span>
+    </div>
+
+    <!-- Aviso verde: Começando -->
+    <div id="starting-text">Começando...</div>
+
+    <!-- Palco das 10 fotos -->
+    <div id="photo-stage">
+      <div id="photo-card" class="photo-card">
+        <img id="current-photo" src="" alt="Foto dela" />
+        <div id="photo-counter" class="photo-counter">1 / 10</div>
+      </div>
+    </div>
+
+    <!-- Carta Rosa com Coração no Meio -->
+    <div id="envelope-stage">
+      <div class="envelope-instruction">Clique no coração da carta 💌</div>
+      <div id="envelope" class="envelope-wrapper">
+        <div class="envelope-flap"></div>
+        <div class="envelope-pocket"></div>
+        <div class="heart-seal">
+          <svg viewBox="0 0 32 32" width="30" height="30">
+            <path fill="#e60067" d="M16 28.5C16 28.5 3 20.2 3 10.8C3 6.5 6.4 3 10.6 3C13.1 3 15.3 4.2 16 6.1C16.7 4.2 18.9 3 21.4 3C25.6 3 29 6.5 29 10.8C29 20.2 16 28.5 16 28.5Z"/>
+          </svg>
+        </div>
+        <div class="letter-paper">
+          <p>
+            Princesa, fiz esse site pra voce analisar e para você ver um pouco de você e ver o quanto te amo e te admiro princesa. te amo amor tenho orgulho de você em tudo você é forte mozão.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // LISTA DAS 10 FOTOS (Coloque os arquivos com esses nomes na mesma pasta do GitHub)
+    // ============================================================
+    const photos = [
+      "foto1.jpg",
+      "foto2.jpg",
+      "foto3.jpg",
+      "foto4.jpg",
+      "foto5.jpg",
+      "foto6.jpg",
+      "foto7.jpg",
+      "foto8.jpg",
+      "foto9.jpg",
+      "foto10.jpg"
+    ];
+
+    // ============================================================
+    // YOUTUBE API - De Janeiro a Janeiro (0CEkbD3nepI)
+    // ============================================================
+    let ytPlayer;
+    let ytReady = false;
+
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+      ytPlayer = new YT.Player('yt-player', {
+        height: '1',
+        width: '1',
+        videoId: '0CEkbD3nepI',
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          loop: 1,
+          playlist: '0CEkbD3nepI',
+          playsinline: 1
+        },
+        events: {
+          onReady: () => { ytReady = true; }
+        }
+      });
+    }
+
+    // ============================================================
+    // CHUVA DE LACINHOS (CAPA) E CORAÇÕES ROSAS (PÁGINA 2)
+    // ============================================================
+    const fallingContainer = document.getElementById('falling-container');
+    let particleMode = 'bows'; // 'bows' ou 'hearts'
+
+    const bowSVG = `<svg width="28" height="28" viewBox="0 0 64 64"><path d="M32 32 C18 14, 4 22, 10 34 C14 42, 24 38, 32 32 Z" fill="#ff4d94"/><path d="M32 32 C46 14, 60 22, 54 34 C50 42, 40 38, 32 32 Z" fill="#ff4d94"/><path d="M28 34 L18 52 L26 48 L30 35 Z" fill="#ff85b3"/><path d="M36 34 L46 52 L38 48 L34 35 Z" fill="#ff85b3"/><circle cx="32" cy="32" r="6" fill="#ff1a75"/></svg>`;
+    const heartSVG = `<svg width="24" height="24" viewBox="0 0 32 32"><path fill="#ff4d94" d="M16 28.5C16 28.5 3 20.2 3 10.8C3 6.5 6.4 3 10.6 3C13.1 3 15.3 4.2 16 6.1C16.7 4.2 18.9 3 21.4 3C25.6 3 29 6.5 29 10.8C29 20.2 16 28.5 16 28.5Z"/></svg>`;
+
+    setInterval(() => {
+      const item = document.createElement('div');
+      item.className = 'falling-item';
+      item.innerHTML = particleMode === 'bows' ? bowSVG : heartSVG;
+      item.style.left = Math.random() * 95 + 'vw';
+      const duration = 3.5 + Math.random() * 3;
+      item.style.animationDuration = duration + 's';
+      const scale = 0.7 + Math.random() * 0.6;
+      item.style.transform = `scale(${scale})`;
+      fallingContainer.appendChild(item);
+
+      setTimeout(() => item.remove(), duration * 1000);
+    }, 320);
+
+    // ============================================================
+    // FLUXO DE NAVEGAÇÃO
+    // ============================================================
+    const screenCover = document.getElementById('screen-cover');
+    const screenMain = document.getElementById('screen-main');
+    const btnStart = document.getElementById('btn-start');
+    const musicBadge = document.getElementById('music-badge');
+    const countdownBox = document.getElementById('countdown-box');
+    const marieWrapper = document.getElementById('marie-btn-wrapper');
+    const btnMarie = document.getElementById('btn-marie');
+    const startingText = document.getElementById('starting-text');
+    const photoStage = document.getElementById('photo-stage');
+    const photoCard = document.getElementById('photo-card');
+    const currentPhotoImg = document.getElementById('current-photo');
+    const photoCounter = document.getElementById('photo-counter');
+    const envelopeStage = document.getElementById('envelope-stage');
+    const envelope = document.getElementById('envelope');
+
+    btnStart.addEventListener('click', () => {
+      // Troca de tela
+      screenCover.classList.remove('active');
+      screenMain.classList.add('active');
+      musicBadge.style.display = 'flex';
+
+      // Inicia música
+      if (ytReady && ytPlayer && ytPlayer.playVideo) {
+        ytPlayer.setVolume(100);
+        ytPlayer.playVideo();
+      }
+
+      // Muda partículas para corações rosas e alterna fundo entre rosa e azul
+      particleMode = 'hearts';
+      let isPink = true;
+      document.body.classList.add('theme-pink');
+      setInterval(() => {
+        isPink = !isPink;
+        document.body.classList.toggle('theme-pink', isPink);
+        document.body.classList.toggle('theme-blue', !isPink);
+      }, 3500);
+
+      // Contagem regressiva de 10 a 0
+      let count = 10;
+      countdownBox.textContent = count;
+
+      const timer = setInterval(() => {
+        count--;
+        if (count >= 0) {
+          countdownBox.textContent = count;
+        }
+        if (count === 0) {
+          clearInterval(timer);
+          setTimeout(() => {
+            countdownBox.style.display = 'none';
+            marieWrapper.style.display = 'flex';
+          }, 700);
+        }
+      }, 1000);
+    });
+
+    // Clique no botão da Gatinha Marie
+    btnMarie.addEventListener('click', () => {
+      marieWrapper.style.display = 'none';
+      startingText.style.display = 'block';
+
+      setTimeout(() => {
+        startingText.style.display = 'none';
+        startPhotoSlideshow();
+      }, 1600);
+    });
+
+    // Sequência das 10 fotos vindo das laterais para o centro
+    function startPhotoSlideshow() {
+      photoStage.style.display = 'flex';
+      let index = 0;
+
+      function showNextPhoto() {
+        if (index >= photos.length) {
+          photoStage.style.display = 'none';
+          envelopeStage.style.display = 'flex';
+          return;
+        }
+
+        // Reinicia animação lateral (alternando esquerda e direita)
+        photoCard.classList.remove('slide-from-left', 'slide-from-right');
+        void photoCard.offsetWidth; // força reflow
+
+        currentPhotoImg.src = photos[index];
+        photoCounter.textContent = `${index + 1} / ${photos.length}`;
+
+        if (index % 2 === 0) {
+          photoCard.classList.add('slide-from-left');
+        } else {
+          photoCard.classList.add('slide-from-right');
+        }
+
+        index++;
+        setTimeout(showNextPhoto, 3200); // Tempo que cada foto fica na tela
+      }
+
+      showNextPhoto();
+    }
+
+    // Abrir carta ao clicar no coração
+    envelope.addEventListener('click', () => {
+      envelope.classList.add('open');
+    });
+  </script>
+</body>
+</html>
